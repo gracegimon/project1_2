@@ -1,0 +1,56 @@
+Notes about backpropagation algorithm with feedforward
+
+Notation: i outputs, j hidden neuron, k inputs
+
+1. Backpropagation comes with the notion of backpropagating the errors from the
+output layers to the hidden layers.
+ The weights from the first input layer will affect all of the
+weights of the hidden layer which are connected to and therefore
+all of the output links' weights
+
+2. The outputs depend of numerous hidden layers. Each hidden neuron 
+receives from several inputs, so this is called feedforward, 
+the activationFunction returning value will go "up" from the input to
+the output layers
+The Ai = activationFunction(in i) << the In i means the Sumj Wji. Aj
+The Aj = activationFunction(in j)  <<< the In j means the Sumk Wjk . Xk
+
+The output neuron's updating process is as follows:
+Wji <- Wji + learningRate . aj . Deltai
+
+Deltai = Err i x activationFunction'(in i) << Delta i is the variation
+of the error in the output layer
+Err i = target - Ai
+
+Deltaj = activationFunction'(in j ) (Sum Wji Delta i)
+
+Being, Err j = Sum(Wji Deltai) << Error in the hidden layer depends of all
+								the outputs neurons she is connected
+
+The sum is because the hidden neuron is receiving the errors of all the output layer
+
+The weights of the input layers now are calculated because of the propagation
+Wkj <- Wkj + learningRate . Ak . Deltaj
+
+ALGORITHM
+We start by presenting with the training sample
+Then calculating the Activation values of all the units
+until we have calculated the Activation values of the output layer
+then compare the outputs that we have received with the training sample outputs
+to compute the error.
+Having computing the error. Adjust the weights.
+The new activation values will be closer to the correct values.
+"Slow learning is better in general, because you are doing gradient descent
+so its most likely to come down into the global minimum"
+Until you reach a state where the weights are not changing too much
+
+Error at the output layers, propagated back.
+"There's no formal affirmation of the influence of having more than two layers
+neurons"
+
+
+
+ 
+
+
+

@@ -200,11 +200,81 @@ private void backPropagation(double learningRate)
 }
 
 
+	// Saves training data in a global array
+	private static void readData(String filename) 
+	{
+        int numberOfData = 0;
+        if (filename.equals("datos_r6_n500.txt"))
+            numberOfData = 500;
+        else if (filename.equals("datos_r6_n1000.txt"))
+            numberOfData = 1000;
+        else if (filename.equals("datos_r6_n2000.txt"))
+            numberOfData = 2000;
+            
+    
+		try 
+        {
+			BufferedReader br_train = new BufferedReader(new FileReader(filename));
+			String str;
+			//int numberOfExamples, numberOfWeights, i;
+            int i;
+            String[] strArr;
+			// Reads first line with the info
+			/*str = br_train.readLine();
+			String[] strArr = str.split(" ");
+			numberOfExamples = Integer.parseInt(strArr[0]);
+			numberOfWeights = Integer.parseInt(strArr[1]);*/
 
-public static void main(String[] args) {
-	BackPropagationL bp = new BackPropagationL(2, 3, 2, 4);
+			// Initializes the Examples and Weights arrays
+			//trainData = new double[numberOfExamples][3];      
 
-	System.out.println("Weights");
+            double[][] data = new double[numberOfData][3];
+            
+			i = 0;
+
+			// Reads examples
+			while ( (str = br_train.readLine()) != null )
+			{
+				strArr = str.split(" ");
+				double[] lineData = new double[3];
+                for (int j = 0; j < strArr.length; j++)
+				{
+					data[i][j] = Double.parseDouble(strArr[j]);                      
+				}
+				i++;
+			}
+
+            System.out.println("\nData:\n");
+            for (int ii = 0; ii < data.length; ii++)
+            {
+                System.out.println("X: " + data[ii][0] + " | Y: " + data[ii][1] + " | Target: " + data[ii][2]);
+            }
+            
+			br_train.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+public static void main(String[] args) 
+{
+    String filename = "";
+
+    if (args.length < 1)
+    {
+        System.out.println("\nFaltan argumentos.\n");
+    }
+
+    filename = args[0];
+    
+    System.out.println("Filename: " + filename);
+    
+    readData(filename);
+
+	//BackPropagationL bp = new BackPropagationL(2, 3, 2, 4);
+
+	//System.out.println("Weights");
 }
 
 

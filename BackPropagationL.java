@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
+import java.util.HashSet;
 
 /*
 	Backpropagation for a neural network
@@ -199,11 +200,65 @@ private void backPropagation(double learningRate)
 
 }
 
+public HashSet<Sample> setExamples(int numberOfExamples){
+	// We are making values inside the circle area (target == -1)
+	HashSet<Sample> samples = new HashSet<Sample>();
+	while (samples.size() < numberOfExamples/2)
+	{
+		double radioX = Math.random()*6;
+		double radioY = Math.random()*6;
+		double alfaX = Math.toRadians(Math.random()*360);
+		double alfaY = Math.toRadians(Math.random()*360);
+		Sample sample = new Sample(radioX +Math.cos(alfaX) + 10, radioY + Math.cos(alfaY) + 10, -1);
+		samples.add(sample);
+		System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
+		
+	}
+
+	int dummy = 0;
+	while (samples.size() < numberOfExamples )
+	{
+		//Outside the circle area
+		double x = Math.random()*5;
+		double y = Math.random()*5;
+		double x1 = 16.0 + Math.random()*5;
+		double y1 = 16.0 + Math.random()*5;
+
+		switch (dummy)
+		{
+			case 0:
+				Sample sample = new Sample(x, y, 1);
+				samples.add(sample);
+				System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
+			break;
+			case 1:
+				sample = new Sample(x,y1,1);
+				samples.add(sample);
+				System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
+			break;
+			case 2:
+				sample = new Sample(x1,y,1);
+				samples.add(sample);
+				System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
+			break;
+			case 3:
+				sample = new Sample(x1,y1,1);
+				samples.add(sample);
+				System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
+			break;
+		}
+		dummy = ( dummy == 3 ? 0 : dummy + 1);
+	}	
+	return samples;
+}
 
 
 public static void main(String[] args) {
 	BackPropagationL bp = new BackPropagationL(2, 3, 2, 4);
-
+	HashSet<Sample> sample = bp.setExamples(30);
+	int count1 = 0;
+	
+	System.out.println("Sample " + sample.size());
 	System.out.println("Weights");
 }
 

@@ -91,9 +91,10 @@ private double calculateErrorHidden()
 
 
 /** 
-*	@param weights : Input weights
+*   @param learningRate : learning rate
 */
-private void backPropagation(double[] weights, double learningRate){
+private void backPropagation(double learningRate)
+{
 
 		int currentIteration = 0;
 		
@@ -197,6 +198,7 @@ private void backPropagation(double[] weights, double learningRate){
 		}while(currentIteration != maxIterations);
 
 }
+
 
 
 public static void main(String[] args) {

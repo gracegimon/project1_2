@@ -253,13 +253,24 @@ public HashSet<Sample> setExamples(int numberOfExamples){
 }
 
 
-public static void main(String[] args) {
-	BackPropagationL bp = new BackPropagationL(2, 3, 2, 4);
-	HashSet<Sample> sample = bp.setExamples(30);
-	int count1 = 0;
-	
-	System.out.println("Sample " + sample.size());
-	System.out.println("Weights");
+public static void main(String[] args) 
+{
+    String filename = "";
+
+    if (args.length < 1)
+    {
+        System.out.println("\nFaltan argumentos.\n");
+    }
+
+    filename = args[0];
+    
+    System.out.println("Filename: " + filename);
+    
+    readData(filename);
+
+	//BackPropagationL bp = new BackPropagationL(2, 3, 2, 4);
+
+	//System.out.println("Weights");
 }
 
 

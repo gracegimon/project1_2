@@ -31,10 +31,10 @@ class BackPropagationL{
 	int numberOfOutputs = 2; // Number of neurons in the output layer
 	double error = 0;
 	double output = 0;
-	int maxIterations = 0;
+	int maxIterations = 100;
 
 	public BackPropagationL(int numberOfWeights, int numberOfNeurons, int numberOfOutputs, int numberOfExamples){
-		trainData = new double[numberOfExamples][numberOfWeights];
+		//trainData = new double[numberOfExamples][numberOfWeights];
 		numberOfNeurons = numberOfNeurons;
 		numberOfOutputs = numberOfOutputs;
 		numberOfInputs = numberOfWeights;
@@ -105,8 +105,9 @@ private void backPropagation(double learningRate)
 			{
 				Neuron n;
 
-				if (currentIteration == 0) //no neuron created
+				if (i == 0 && currentIteration == 0) //no neuron created
 				{
+					//System.out.println("Input Neurons size " +inputNeurons.size() );
 					//Calculate activation function for input
 					for (int j = 0; j < numberOfInputs; j++)
 					{
@@ -139,13 +140,14 @@ private void backPropagation(double learningRate)
 
 						n.activationValue = activationFunction(n);
 						n.derivativeValue = derivativeActivationFunction(n.activationValue);
-						hiddenNeurons.add(n);
+						outputNeurons.add(n);
 					}
 
 				}
 						
 				else
 				{
+					//System.out.println("Input Neurons size " +inputNeurons.size() );
 					for (int l = 0; l< inputNeurons.size(); l++)
 					{
 						n = inputNeurons.get(l);
@@ -163,6 +165,7 @@ private void backPropagation(double learningRate)
 					{
 						n = outputNeurons.get(l);
 						n.activationValue = activationFunction(n);
+					//	System.out.println("Activation F outputNeurons " + n.activationValue);
 						n.derivativeValue = derivativeActivationFunction(n.activationValue);
 					}							
 
@@ -252,7 +255,62 @@ public HashSet<Sample> setExamples(int numberOfExamples){
 	return samples;
 }
 
+		// Saves training data in a global array
+	private static void readData(String filename)
+	{
+	        int numberOfData = 0;
+	        if (filename.equals("datos_r6_n500.txt"))
+	            numberOfData = 500;
+	        else if (filename.equals("datos_r6_n1000.txt"))
+	            numberOfData = 1000;
+	        else if (filename.equals("datos_r6_n2000.txt"))
+	            numberOfData = 2000;
+	            
+	    
+	try
+	        {
+	BufferedReader br_train = new BufferedReader(new FileReader(filename));
+	String str;
+	//int numberOfExamples, numberOfWeights, i;
+	            int i;
+	            String[] strArr;
+	// Reads first line with the info
+	/*str = br_train.readLine();
+	String[] strArr = str.split(" ");
+	numberOfExamples = Integer.parseInt(strArr[0]);
+	numberOfWeights = Integer.parseInt(strArr[1]);*/
 
+	// Initializes the Examples and Weights arrays
+	//trainData = new double[numberOfExamples][3];
+
+	//double[][] data
+	trainData = new double[numberOfData][3];
+	            
+	i = 0;
+
+	// Reads examples
+	while ( (str = br_train.readLine()) != null )
+	{
+	strArr = str.split(" ");
+	double[] lineData = new double[3];
+	                for (int j = 0; j < strArr.length; j++)
+	{
+	trainData[i][j] = Double.parseDouble(strArr[j]);
+	}
+	i++;
+	}
+
+	            System.out.println("\nData:\n");
+	            for (int ii = 0; ii < trainData.length; ii++)
+	            {
+	                System.out.println("X: " + trainData[ii][0] + " | Y: " + trainData[ii][1] + " | Target: " + trainData[ii][2]);
+	            }
+	            
+	br_train.close();
+	} catch(IOException e) {
+	e.printStackTrace();
+	}
+	}
 public static void main(String[] args) 
 {
     String filename = "";
@@ -260,6 +318,7 @@ public static void main(String[] args)
     if (args.length < 1)
     {
         System.out.println("\nFaltan argumentos.\n");
+        System.exit(-1);
     }
 
     filename = args[0];
@@ -268,7 +327,8 @@ public static void main(String[] args)
     
     readData(filename);
 
-	//BackPropagationL bp = new BackPropagationL(2, 3, 2, 4);
+	BackPropagationL bp = new BackPropagationL(2, 3, 2,trainData.length);
+	bp.backPropagation(0.3);
 
 	//System.out.println("Weights");
 }

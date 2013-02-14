@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Vector;
 
 /*
 	Backpropagation for a neural network
@@ -9,8 +10,6 @@ import java.io.IOException;
 class BackPropagationL{
 
 	static double[][] trainData;
-	static double[][] weightsInput; // Wjk, row: Neuron, col: Xk
-	static double[][] weightsOutput; // Wji, row: Hidden, col: Output
 	// static double[] deltaWJ; // Delta diference , Dj, Di
 	// static double[] deltaWJI; // Delta diference , Dj, Di 
 	// static double[] derivativeValueJ;
@@ -18,9 +17,9 @@ class BackPropagationL{
 	// static double[] activationValueJ; //Value from the activation function on each hidden neuron
 	// static double[] activationValueI; //Value from the activation function on each output neuron
 	// static double[]	activationValueK;
-	Vector<Neuron> inputNeuron;
-	Vector<Neuron> hiddenNeuron;
-	Vector<Neuron> outputNeuron;
+	Vector<Neuron> inputNeurons;
+	Vector<Neuron> hiddenNeurons;
+	Vector<Neuron> outputNeurons;
 
 	static double[][] errors; // Errors for each weight 
 	/*
@@ -41,60 +40,51 @@ class BackPropagationL{
 		inputNeurons = new Vector<Neuron>();
 		hiddenNeurons = new Vector<Neuron>();
 		outputNeurons = new Vector<Neuron>();
-		weightsInput = new double[numberOfNeurons][numberOfWeights];
-		weightsOutput = new double[numberOfNeurons][numberOfOutputs];
 
 	}
 
 /**
  *  @param  weights : Weights from a neuron 
 */
-private double activationFunction(Neuron neuron){
+private double activationFunction(Neuron neuron)
+{
 	double activation = 0;
-	double[] weights = neuron.weights;
-	if (neuron.type == 1){ 
-		double activationValues = new double[numberOfInputs];
-		//Then the ActivationValues come from input layer
-		for (int l =0; l< inputNeurons.length; l++)
+	Vector<Synapsis> weights = neuron.weights;
+	
+		double[] activationValues = new double[weights.size()];
+		double[] weightsValues = new double[weights.size()];
+		
+		for (int l =0; l< weights.size(); l++)
 		{
-			activationValues[l] = inputNeurons.get(l).activationValue;
+			activationValues[l] = weights.get(l).parent.activationValue;
+			weightsValues[l] = weights.get(l).value;
+
 		}
 
-		for (int i = 0; i < weights.length; i++)// Sumi Wij * activationValue
+		for (int i = 0; i < activationValues.length; i++)// Sumi Wij * activationValue
 		{ 
-			activation += weights[i] * activationValue[i];
+			activation += weightsValues[i] * activationValues[i];
+			
 		}		
-	}
-	else {
-		//ActivationValues come from hidden layer
-		double activationValues = new double[numberOfNeurons];
-		for (int l =0; l< hiddenNeurons.length; l++)
-		{
-			activationValues[l] = hiddenNeurons.get(l).activationValue;
-		}
-
-		for (int i = 0; i < weights.length; i++)// Sumi Wij * activationValue
-		{ 
-			activation += weights[i] * activationValue[i];
-		}	
-
-	}
-	return Math.tanh.value(activation); 
+	
+	return Math.tanh(activation); 
 }
 
-private double derivativeActivationFunction(double value ){
-	return (1.0 - (Math.pow(value),2));
+private double derivativeActivationFunction(double value )
+{
+	return (1.0 - (Math.pow(value,2)));
 }
 
-private double calculateErrorHidden(Neuron n) 
-{ //MODIFY!!! 
+private double calculateErrorHidden() 
+{ 
 	double error = 0.0;
-	for (int k = numberOfNeurons; k < deltaW.length; k++)
+	for (int k = 0; k < outputNeurons.size(); k++)
 	{
-		for (int i = 0 ; i<weightsOutput.length; i++)
+		Neuron n = outputNeurons.get(k);
+		for (int j = 0; j < n.weights.size(); j++)
 		{
-			error += weightsOutput[j][i] * deltaW[k]
-		}
+			error += n.weights.get(j).value * n.deltaW;
+		}	
 	}
 	return error;
 }
@@ -105,23 +95,6 @@ private double calculateErrorHidden(Neuron n)
 */
 private void backPropagation(double[] weights, double learningRate){
 
-		// Random initialization of weights
-		for (int i = 0; i < numberOfNeurons; i++)
-		{
-			for (int j = 0; j< numberOfInputs; j++)
-			{
-				weightsInput[i][j] = Math.random()/10; // Check
-			}		
-		}
-		// In this case, numberOfInputs = numberOfOutputs
-		for (int i = 0; i < numberOfNeurons; i++)
-		{
-			for (int j = 0; j< numberOfOutputs; j++)
-			{
-				weightsOutput[i][j] = Math.random()/10; // Check
-			}		
-		}
-
 		int currentIteration = 0;
 		
 		do
@@ -130,13 +103,12 @@ private void backPropagation(double[] weights, double learningRate){
 			{
 				Neuron n;
 
-				if (i == 0) //no neuron created
+				if (currentIteration == 0) //no neuron created
 				{
 					//Calculate activation function for input
 					for (int j = 0; j < numberOfInputs; j++)
 					{
-						n = new Neuron(numberOfInputs);
-						//Add weights
+						n = new Neuron();
 						n.activationValue = trainData[i][j];
 						inputNeurons.add(n);
 						 //Input layer (Xk)
@@ -145,15 +117,24 @@ private void backPropagation(double[] weights, double learningRate){
 					//Calculate activation function for hidden
 					for (int j = 0; j < numberOfNeurons; j++)
 					{
-						n = new Neuron(numberOfInputs);
+						n = new Neuron();
+						for (int k = 0; k < inputNeurons.size(); k++){
+							n.AddSynapsis(new Synapsis(Math.random()/10, inputNeurons.get(k)));
+						}
+
 						n.activationValue = activationFunction(n);
-						n.derivativeValue = derivativeActivationFunction(n.activationValue);
+						n.derivativeValue = derivativeActivationFunction(n.activationValue); 
 						hiddenNeurons.add(n);
+
 					}
 
 					for (int j = 0; j < numberOfOutputs; j++)
 					{
-						n = new Neuron(numberOfNeurons);
+						n = new Neuron();
+						for (int k = 0; k < hiddenNeurons.size(); k++){
+							n.AddSynapsis(new Synapsis(Math.random()/10, hiddenNeurons.get(k)));
+						}
+
 						n.activationValue = activationFunction(n);
 						n.derivativeValue = derivativeActivationFunction(n.activationValue);
 						hiddenNeurons.add(n);
@@ -163,20 +144,20 @@ private void backPropagation(double[] weights, double learningRate){
 						
 				else
 				{
-					for (int l = 0; l< inputNeurons.length; l++)
+					for (int l = 0; l< inputNeurons.size(); l++)
 					{
 						n = inputNeurons.get(l);
-						n.activationValue = trainData[i][j];
+						n.activationValue = trainData[i][l];
 					}
 
-					for (int l = 0; l< hiddenNeurons.length; l++)
+					for (int l = 0; l< hiddenNeurons.size(); l++)
 					{
 						n = hiddenNeurons.get(l);
 						n.activationValue = activationFunction(n);
 						n.derivativeValue = derivativeActivationFunction(n.activationValue);
 					}
 
-					for (int l = 0; l< outputNeurons.length; l++)
+					for (int l = 0; l< outputNeurons.size(); l++)
 					{
 						n = outputNeurons.get(l);
 						n.activationValue = activationFunction(n);
@@ -187,40 +168,39 @@ private void backPropagation(double[] weights, double learningRate){
 				
 				double target = trainData[i][trainData[i].length-1];
 				// Calculate Delta i
-				for (int j = 0; j < outputNeurons.length; j++)
+				for (int j = 0; j < outputNeurons.size(); j++)
 				{ 
 					n = outputNeurons.get(j);
 					n.deltaW = (target - n.activationValue) * n.derivativeValue;
 				}
 
 				//Calculate Delta j
-				for (int j = 0; j< hiddenNeurons.length; j++)
+				for (int j = 0; j< hiddenNeurons.size(); j++)
 				{
 					n = hiddenNeurons.get(j);
-					n.deltaW = n.derivativeValue * calculateErrorHidden(n);
+					n.deltaW = n.derivativeValue * calculateErrorHidden();
 				}
 
 
 				// Update weights for Wij
-				for (int j = 0; j< outputNeurons.length; j++)
+				for (int j = 0; j< outputNeurons.size(); j++)
 				{
-					for (int k = 0; j< hiddenNeurons.length; j++)
-					{
-						// MODIFY!!
-						weightsOutput[k][j] += learningRate;
-						weightsOutput[k][j] *= activationValue[k+numberOfInputs] * deltaW[j+numberOfNeurons];
+					n = outputNeurons.get(j);
+					for (int k=0; k<n.weights.size(); k++){
+						Synapsis s = n.weights.get(k);
+						s.value += learningRate * s.parent.activationValue * n.deltaW;
 					}
 				}
 
 			}
 			currentIteration++;
-		}while(currentIteration != maxIterations)
+		}while(currentIteration != maxIterations);
 
 }
 
 
 public static void main(String[] args) {
-	BackPropagationL bp = new BackPropagationL();
+	BackPropagationL bp = new BackPropagationL(2, 3, 2, 4);
 
 	System.out.println("Weights");
 }

@@ -1,18 +1,24 @@
+import java.util.Vector;
 
 public class Neuron{
 	public double activationValue;
 	public double deltaW;
 	public double derivativeValue;
-	public double[][] weights; //Weights that are received
+	public Vector<Synapsis> weights; //Weights that are received. row: each neuron, col: each weight
 	public int type; // 0: input, 1:hidden, 2: output
 
-	public Neuron(){
 
+
+	public Neuron()
+	{
+
+		weights = new Vector<Synapsis>();
+		
 	}
 
-	public Neuron(int numberOfInputs)
+	public void AddSynapsis(Synapsis s)
 	{
-		weights = new double[numberOfInputs];
+		weights.add(s);
 	}
 
 

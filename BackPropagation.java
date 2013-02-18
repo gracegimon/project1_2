@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 /*
 	Backpropagation for a neural network
@@ -24,7 +25,7 @@ class BackPropagation{
 	double output = 0;
 	int maxIterations = 0;
 
-	public Backpropagation(int numberOfWeights, int numberOfNeurons, int numberOfOutputs, int numberOfExamples){
+	public BackPropagation(int numberOfWeights, int numberOfNeurons, int numberOfOutputs, int numberOfExamples){
 		trainData = new double[numberOfExamples][numberOfWeights];
 		numberOfNeurons = numberOfNeurons;
 		numberOfOutputs = numberOfOutputs;
@@ -52,7 +53,7 @@ private double activationFunction(double[] weights, int ini){
 }
 
 private double derivativeActivationFunction(double value ){
-	return (1.0 - (Math.pow(value),2));
+	return (1.0 - (Math.pow(value, 2)));
 }
 
 private double calculateErrorHidden(int j)
@@ -62,7 +63,7 @@ private double calculateErrorHidden(int j)
 	{
 		for (int i = 0 ; i<weightsOutput.length; i++)
 		{
-			error += weightsOutput[j][i] * deltaW[k]
+			error += weightsOutput[j][i] * deltaW[k];
 		}
 	}
 	return error;
@@ -72,7 +73,7 @@ private double calculateErrorHidden(int j)
 /** 
 *	@param weights : Input weights
 */
-private void backPropagation(double[] weights, double learningRate){
+private void backPropagation(double learningRate){
 
 		// Random initialization of weights
 		for (int i = 0; i < numberOfNeurons; i++)
@@ -162,15 +163,90 @@ private void backPropagation(double[] weights, double learningRate){
 
 
 			currentIteration++;
-		}while(currentIteration != maxIterations)
+		}while(currentIteration != maxIterations);
 
 }
 
 
-public static void main(String[] args) {
-	Backpropagation bp = new Backpropagation();
 
-	System.out.println("Weights");
+	// Saves training data in a global array
+
+	private static void readTrainingFile(String trainF) 
+
+	{
+
+		try {
+
+			BufferedReader br_train = new BufferedReader(new FileReader(trainF));
+			String str;
+			String[] strArr;
+
+			int numberOfExamples, numberOfWeights, i;
+
+			// Reads examples
+			i = 0;
+			while ( (str = br_train.readLine()) != null )
+
+			{
+
+				strArr = str.split(",");
+
+				for (int j=0; j < strArr.length; j++)
+
+				{
+
+					trainData[i][j] = Double.parseDouble(strArr[j]);
+				}
+
+
+
+				i++;
+
+			}
+
+	
+
+			br_train.close();
+
+		} catch(IOException e) {
+
+			e.printStackTrace();
+
+		}
+
+	}
+
+
+
+// FUNCION PRINCIPAL
+
+public static void main(String[] args) {
+
+	int numberOfExamples, numberOfInputs, numberOfHidden, numberOfOutputs;
+	double learningRate;
+	
+	if (args.length == 6)
+	{
+		// Saving the parameters
+		learningRate = Double.parseDouble(args[1]);
+		numberOfExamples = Integer.parseInt(args[4]);
+		numberOfInputs = Integer.parseInt(args[5]); // Xk
+		numberOfHidden = Integer.parseInt(args[6]); // # of neurons in hidden layer
+		numberOfOutputs = Integer.parseInt(args[7]);
+
+		// Initializes
+		BackPropagation bp = new BackPropagation(numberOfInputs, numberOfHidden,  numberOfOutputs, numberOfExamples);
+		
+		// Reads file with training examples
+		readTrainingFile(args[3]);
+
+		// Start Learning
+		bp.backPropagation(learningRate);
+	}
+	 else {
+		System.out.println("Please indicate all parameters to run experiments.");
+		System.exit(-1);
+	}
 }
 
 

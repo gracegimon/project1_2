@@ -6,7 +6,7 @@ public class Neuron{
 	public double derivativeValue;
 	public Vector<Synapsis> weights; //Weights that are received. row: each neuron, col: each weight
 	public int type; // 0: input, 1:hidden, 2: output
-
+	public double error; // NUll for hidden and input
 
 
 	public Neuron()

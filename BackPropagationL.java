@@ -36,13 +36,20 @@ class BackPropagationL{
 	public BackPropagationL(int numberOfWeights, int numberOfNeurons, int numberOfOutputs, int numberOfExamples){
 		//trainData = new double[numberOfExamples][numberOfWeights];
 		numberOfNeurons = numberOfNeurons;
-		numberOfOutputs = numberOfOutputs;
+		numberOfOutputs = 1; //numberOfOutputs;
 		numberOfInputs = numberOfWeights;
 		inputNeurons = new Vector<Neuron>();
 		hiddenNeurons = new Vector<Neuron>();
 		outputNeurons = new Vector<Neuron>();
 
 	}
+
+// Sigmoid Function
+private double sigmoidFunc(double value)
+{
+	return (1 / (1 + Math.exp(-x)));
+}
+
 
 /**
  *  @param  weights : Weights from a neuron 
@@ -73,7 +80,8 @@ private double activationFunction(Neuron neuron)
 
 private double derivativeActivationFunction(double value )
 {
-	return (1.0 - (Math.pow(value,2)));
+	//return (1.0 - (Math.pow(value,2)));
+	return (value * (1 - value));
 }
 
 private double calculateErrorHidden() 
@@ -139,6 +147,7 @@ private void backPropagation(double learningRate)
 						}
 
 						n.activationValue = activationFunction(n);
+						n.error += Math.pow((trainData[i].length-1) - n.activationValue, 2);
 						n.derivativeValue = derivativeActivationFunction(n.activationValue);
 						outputNeurons.add(n);
 					}
@@ -147,6 +156,18 @@ private void backPropagation(double learningRate)
 						
 				else
 				{
+
+					if (currentIteration > 0) 
+					{
+						for (int l = 0; l< outputNeurons.size(); l++)
+                                       		{
+                                               		 n = outputNeurons.get(l);
+                                        	//      System.out.println("Activation F outputNeurons " + n.activationValue);
+                                	                n.error = 0;
+                	                        }
+		
+					}
+
 					//System.out.println("Input Neurons size " +inputNeurons.size() );
 					for (int l = 0; l< inputNeurons.size(); l++)
 					{
@@ -166,6 +187,7 @@ private void backPropagation(double learningRate)
 						n = outputNeurons.get(l);
 						n.activationValue = activationFunction(n);
 					//	System.out.println("Activation F outputNeurons " + n.activationValue);
+						n.error += Math.pow((trainData[i].length-1) - n.activationValue, 2);
 						n.derivativeValue = derivativeActivationFunction(n.activationValue);
 					}							
 
@@ -198,21 +220,32 @@ private void backPropagation(double learningRate)
 				}
 
 			}
+			Neuron n;
+			for (int l = 0; l< outputNeurons.size(); l++)
+                        {
+                                n = outputNeurons.get(l);
+                                System.out.println("Error de neurona "+ l + " "+  n.error);
+			}
+
 			currentIteration++;
 		}while(currentIteration != maxIterations);
 
 }
 
-public HashSet<Sample> setExamples(int numberOfExamples){
+public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
+
+        double prop = gridSize / 5;
+	double radius = (gridSize - (prop*2)) / 2; 
+
 	// We are making values inside the circle area (target == -1)
 	HashSet<Sample> samples = new HashSet<Sample>();
 	while (samples.size() < numberOfExamples/2)
 	{
-		double radioX = Math.random()*6;
-		double radioY = Math.random()*6;
+		double radioX = Math.random()*radius;
+		double radioY = Math.random()*radius;
 		double alfaX = Math.toRadians(Math.random()*360);
 		double alfaY = Math.toRadians(Math.random()*360);
-		Sample sample = new Sample(radioX +Math.cos(alfaX) + 10, radioY + Math.cos(alfaY) + 10, -1);
+		Sample sample = new Sample(radioX +Math.cos(alfaX) + gridSize/2, radioY + Math.cos(alfaY) + gridSize/2, -1);
 		samples.add(sample);
 		System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
 		
@@ -328,7 +361,7 @@ public static void main(String[] args)
     readData(filename);
 
 	BackPropagationL bp = new BackPropagationL(2, 3, 2,trainData.length);
-	bp.backPropagation(0.3);
+	bp.backPropagation(0.05);
 
 	//System.out.println("Weights");
 }

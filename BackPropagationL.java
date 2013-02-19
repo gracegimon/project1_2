@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Vector;
 import java.util.HashSet;
 
@@ -11,16 +13,10 @@ import java.util.HashSet;
 class BackPropagationL{
 
 	static double[][] trainData;
-	// static double[] deltaWJ; // Delta diference , Dj, Di
-	// static double[] deltaWJI; // Delta diference , Dj, Di 
-	// static double[] derivativeValueJ;
-	// static double[] derivativeValueI; 
-	// static double[] activationValueJ; //Value from the activation function on each hidden neuron
-	// static double[] activationValueI; //Value from the activation function on each output neuron
-	// static double[]	activationValueK;
 	Vector<Neuron> inputNeurons;
 	Vector<Neuron> hiddenNeurons;
 	Vector<Neuron> outputNeurons;
+	static double [] outputs;
 
 	static double[][] errors; // Errors for each weight 
 	/*
@@ -28,7 +24,7 @@ class BackPropagationL{
 	*/
 	int numberOfNeurons = 2; // Number of Neurons in the hidden layer
 	int numberOfInputs = 2; // Number of neurons in the input layer
-	int numberOfOutputs = 2; // Number of neurons in the output layer
+	int numberOfOutputs = 1; // Number of neurons in the output layer
 	double error = 0;
 	double output = 0;
 	int maxIterations = 100;
@@ -36,7 +32,7 @@ class BackPropagationL{
 	public BackPropagationL(int numberOfWeights, int numberOfNeurons, int numberOfOutputs, int numberOfExamples){
 		//trainData = new double[numberOfExamples][numberOfWeights];
 		numberOfNeurons = numberOfNeurons;
-		numberOfOutputs = 1; //numberOfOutputs;
+		numberOfOutputs = numberOfOutputs;
 		numberOfInputs = numberOfWeights;
 		inputNeurons = new Vector<Neuron>();
 		hiddenNeurons = new Vector<Neuron>();
@@ -47,7 +43,7 @@ class BackPropagationL{
 // Sigmoid Function
 private double sigmoidFunc(double value)
 {
-	return (1 / (1 + Math.exp(-x)));
+	return (1 / (1 + Math.exp(-1 * value)));
 }
 
 
@@ -75,7 +71,7 @@ private double activationFunction(Neuron neuron)
 			
 		}		
 	
-	return Math.tanh(activation); 
+	return sigmoidFunc(activation); 
 }
 
 private double derivativeActivationFunction(double value )
@@ -160,11 +156,11 @@ private void backPropagation(double learningRate)
 					if (currentIteration > 0) 
 					{
 						for (int l = 0; l< outputNeurons.size(); l++)
-                                       		{
-                                               		 n = outputNeurons.get(l);
-                                        	//      System.out.println("Activation F outputNeurons " + n.activationValue);
-                                	                n.error = 0;
-                	                        }
+                   		{
+                           		 n = outputNeurons.get(l);
+                    	//      System.out.println("Activation F outputNeurons " + n.activationValue);
+            	                n.error = 0;
+                        }
 		
 					}
 
@@ -189,6 +185,7 @@ private void backPropagation(double learningRate)
 					//	System.out.println("Activation F outputNeurons " + n.activationValue);
 						n.error += Math.pow((trainData[i].length-1) - n.activationValue, 2);
 						n.derivativeValue = derivativeActivationFunction(n.activationValue);
+						outputs[i] = n.activationValue;
 					}							
 
 				}
@@ -222,19 +219,22 @@ private void backPropagation(double learningRate)
 			}
 			Neuron n;
 			for (int l = 0; l< outputNeurons.size(); l++)
-                        {
-                                n = outputNeurons.get(l);
-                                System.out.println("Error de neurona "+ l + " "+  n.error);
+            {
+                n = outputNeurons.get(l);
+                System.out.println("Error de neurona "+ l + " : "+  n.error);
 			}
 
 			currentIteration++;
 		}while(currentIteration != maxIterations);
 
+		/* Write results into a file */
+		writeData();
+
 }
 
 public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
 
-        double prop = gridSize / 5;
+    double prop = gridSize / 5;
 	double radius = (gridSize - (prop*2)) / 2; 
 
 	// We are making values inside the circle area (target == -1)
@@ -298,52 +298,86 @@ public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
 	            numberOfData = 1000;
 	        else if (filename.equals("datos_r6_n2000.txt"))
 	            numberOfData = 2000;
-	            
-	    
-	try
-	        {
-	BufferedReader br_train = new BufferedReader(new FileReader(filename));
-	String str;
-	//int numberOfExamples, numberOfWeights, i;
-	            int i;
-	            String[] strArr;
-	// Reads first line with the info
-	/*str = br_train.readLine();
-	String[] strArr = str.split(" ");
-	numberOfExamples = Integer.parseInt(strArr[0]);
-	numberOfWeights = Integer.parseInt(strArr[1]);*/
+	   
+		try
+		{
+			BufferedReader br_train = new BufferedReader(new FileReader(filename));
+			String str;
+			//int numberOfExamples, numberOfWeights, i;
+		    int i;
+		    String[] strArr;
+			// Reads first line with the info
+			/*str = br_train.readLine();
+			String[] strArr = str.split(" ");
+			numberOfExamples = Integer.parseInt(strArr[0]);
+			numberOfWeights = Integer.parseInt(strArr[1]);*/
 
-	// Initializes the Examples and Weights arrays
-	//trainData = new double[numberOfExamples][3];
+			// Initializes the Examples and Weights arrays
+			//trainData = new double[numberOfExamples][3];
 
-	//double[][] data
-	trainData = new double[numberOfData][3];
-	            
-	i = 0;
+			//double[][] data
+			trainData = new double[numberOfData][3];
+			outputs = new double[numberOfData];
+			            
+			i = 0;
 
-	// Reads examples
-	while ( (str = br_train.readLine()) != null )
-	{
-	strArr = str.split(" ");
-	double[] lineData = new double[3];
-	                for (int j = 0; j < strArr.length; j++)
-	{
-	trainData[i][j] = Double.parseDouble(strArr[j]);
-	}
-	i++;
+			// Reads examples
+			while ( (str = br_train.readLine()) != null )
+			{
+			strArr = str.split(" ");
+			double[] lineData = new double[3];
+			                for (int j = 0; j < strArr.length; j++)
+			{
+			trainData[i][j] = Double.parseDouble(strArr[j]);
+			}
+			i++;
+			}
+
+			            
+		     /*       for (int ii = 0; ii < trainData.length; ii++)
+		            {
+		                System.out.println("X: " + trainData[ii][0] + " | Y: " + trainData[ii][1] + " | Target: " + trainData[ii][2]);
+		            }
+		       */    
+			       System.out.println("\nData:\n OK"); 
+			br_train.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
 	}
 
-	            System.out.println("\nData:\n");
-	            for (int ii = 0; ii < trainData.length; ii++)
-	            {
-	                System.out.println("X: " + trainData[ii][0] + " | Y: " + trainData[ii][1] + " | Target: " + trainData[ii][2]);
-	            }
-	            
-	br_train.close();
-	} catch(IOException e) {
-	e.printStackTrace();
-	}
-	}
+
+public void writeData()
+{
+	FileWriter fichero = null;
+    PrintWriter pw = null;
+    try
+    {
+        fichero = new FileWriter("resultados.txt");
+        pw = new PrintWriter(fichero);
+        pw.println("x   y   output");
+        for (int i = 0; i < trainData.length; i++)
+        {
+				pw.println(trainData[i][0]+"\t"+trainData[i][1]+"\t"+outputs[i]);
+          
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+       try {
+       // Nuevamente aprovechamos el finally para 
+       // asegurarnos que se cierra el fichero.
+       if (null != fichero)
+          fichero.close();
+       } catch (Exception e2) {
+          e2.printStackTrace();
+       }
+    }
+
+}
+
+
 public static void main(String[] args) 
 {
     String filename = "";
@@ -360,7 +394,7 @@ public static void main(String[] args)
     
     readData(filename);
 
-	BackPropagationL bp = new BackPropagationL(2, 3, 2,trainData.length);
+	BackPropagationL bp = new BackPropagationL(2, 3, 1,trainData.length);
 	bp.backPropagation(0.05);
 
 	//System.out.println("Weights");

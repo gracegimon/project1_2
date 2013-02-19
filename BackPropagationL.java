@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Vector;
+import java.util.Iterator;
 import java.util.HashSet;
 
 //Probar mas de dos capas
@@ -377,6 +378,55 @@ private void backPropagation(double learningRate)
 
 }
 
+public void generateExamples(int numberOfExamples){
+
+	HashSet<Sample> insideCircle = new HashSet<Sample>();
+	HashSet<Sample> outsideCircle = new HashSet<Sample>();
+	while (insideCircle.size() < numberOfExamples/2 || outsideCircle.size() < numberOfExamples/2 ){
+		double x = Math.random()*20;
+		double y = Math.random()*20;
+		Sample s;
+		
+		if ( Math.pow((x - 10),2) + Math.pow((y-10),2) < 36){
+			if(insideCircle.size() < numberOfExamples/2){
+			s = new Sample(x,y,0);
+			insideCircle.add(s);
+			}
+		}
+		else{
+			if ( outsideCircle.size() < numberOfExamples/2){
+							s = new Sample(x,y,1);
+							outsideCircle.add(s);
+			}
+			
+		}
+	}
+
+Iterator<Sample> it = insideCircle.iterator();
+	while( it.hasNext()){
+		System.out.println("INSIDE");
+			Sample s = it.next();
+			System.out.print(s.x+" "+s.y+"  "+s.target);
+			System.out.println("  Distancia "+Math.sqrt(Math.pow(s.x-10,2)+ Math.pow(s.y-10,2) ) + "  ");
+		}
+		
+		it = outsideCircle.iterator();
+		
+		while( it.hasNext()){
+			System.out.println("OUTSIDE");
+			Sample s = it.next();
+			System.out.print(s.x+" "+s.y+"  "+s.target);
+			System.out.println("  Distancia "+Math.sqrt(Math.pow(s.x-10,2)+ Math.pow(s.y-10,2) ) + "  ");
+		}
+	writeExamples(insideCircle,outsideCircle);
+	
+
+}
+
+
+
+
+
 public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
 
     double prop = gridSize / 5;
@@ -437,31 +487,50 @@ public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
 	private static void readData(String filename)
 	{
 	        int numberOfData = 0;
+	        int numberOfTestData = 0;
 	        if (filename.equals("datos_r6_n500.txt"))
 	            numberOfData = 500;
 	        else if (filename.equals("datos_r6_n1000.txt"))
 	            numberOfData = 1000;
 	        else if (filename.equals("datos_r6_n2000.txt"))
 	            numberOfData = 2000;
-	   
+	        else if(filename.equals("training3_50.txt"))
+	        	numberOfData = 170;
+	        else if(filename.equals("test3_50.txt"))
+	        	numberOfTestData = 171;
+	        else if(filename.equals("training3_60.txt"))
+	        	numberOfData = 204;
+	        else if(filename.equals("test3_60.txt"))
+	        	numberOfTestData = 137;
+	        else if(filename.equals("training3_70.txt"))
+	        	numberOfData = 238;
+	        else if(filename.equals("test3_70.txt"))
+	        	numberOfTestData = 103;
+	        else if(filename.equals("training3_80.txt"))
+	        	numberOfData = 272;
+	        else if(filename.equals("test3_80.txt"))
+	        	numberOfTestData = 69;
+	        else if(filename.equals("training3_90.txt"))
+	        	numberOfData = 306;
+	        else if(filename.equals("test3_90.txt"))
+	        	numberOfTestData = 35;
+
 		try
 		{
 			BufferedReader br_train = new BufferedReader(new FileReader(filename));
 			String str;
 			//int numberOfExamples, numberOfWeights, i;
-		    int i;
-		    String[] strArr;
-			// Reads first line with the info
-			/*str = br_train.readLine();
+		    int i, numberOfAttributes = 0;
+			// Reads first line to know how many attributes are
+			str = br_train.readLine();
 			String[] strArr = str.split(" ");
-			numberOfExamples = Integer.parseInt(strArr[0]);
-			numberOfWeights = Integer.parseInt(strArr[1]);*/
+			numberOfAttributes = strArr.length;
 
 			// Initializes the Examples and Weights arrays
 			//trainData = new double[numberOfExamples][3];
 
 			//double[][] data
-			trainData = new double[numberOfData][3];
+			trainData = new double[numberOfData][numberOfAttributes];
 			outputs = new double[numberOfData];
 			            
 			i = 0;
@@ -470,36 +539,65 @@ public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
 			while ( (str = br_train.readLine()) != null )
 			{
 			strArr = str.split(" ");
-			double[] lineData = new double[3];
+			double[] lineData = new double[numberOfAttributes];
 			                for (int j = 0; j < strArr.length; j++)
 			{
-			trainData[i][j] = Double.parseDouble(strArr[j]);
+				trainData[i][j] = Double.parseDouble(strArr[j]);
 			}
 			i++;
 			}
-
-			            
-		     /*       for (int ii = 0; ii < trainData.length; ii++)
-		            {
-		                System.out.println("X: " + trainData[ii][0] + " | Y: " + trainData[ii][1] + " | Target: " + trainData[ii][2]);
-		            }
-		       */    
-			       System.out.println("\nData:\n OK"); 
+  
+            System.out.println("\nData:\n OK"); 
 			br_train.close();
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-
-public void writeData()
-{
-	FileWriter fichero = null;
+public void writeExamples(HashSet<Sample> insideCircle, HashSet<Sample> outsideCircle){
+	FileWriter file = null;
     PrintWriter pw = null;
     try
     {
-        fichero = new FileWriter("resultados.txt");
-        pw = new PrintWriter(fichero);
+        file = new FileWriter("GeneratedExamples.csv");
+        pw = new PrintWriter(file);
+
+
+		Iterator<Sample> it = insideCircle.iterator();
+		
+		while( it.hasNext()){
+			Sample s = it.next();
+			pw.println(s.x+","+s.y+","+s.target);
+		}
+		
+		it = outsideCircle.iterator();
+		
+		while( it.hasNext()){
+			Sample s = it.next();
+			pw.println(s.x+","+s.y+","+s.target);
+		}
+
+	}catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+       try {
+
+       if (null != file)
+          file.close();
+       } catch (Exception e2) {
+          e2.printStackTrace();
+       }
+    }
+}
+
+public void writeData()
+{
+	FileWriter file = null;
+    PrintWriter pw = null;
+    try
+    {
+        file = new FileWriter("resultados.txt");
+        pw = new PrintWriter(file);
         pw.println("x   y   output");
         int good = 0;
         for (int i = 0; i < trainData.length; i++)
@@ -521,10 +619,8 @@ public void writeData()
         e.printStackTrace();
     } finally {
        try {
-       // Nuevamente aprovechamos el finally para 
-       // asegurarnos que se cierra el fichero.
-       if (null != fichero)
-          fichero.close();
+       if (null != file)
+          file.close();
        } catch (Exception e2) {
           e2.printStackTrace();
        }
@@ -550,7 +646,8 @@ public static void main(String[] args)
     readData(filename);
 
 	BackPropagationL bp = new BackPropagationL(2, 4, 1,trainData.length,1);
-	bp.backPropagation(0.05);
+	//bp.backPropagation(0.05);
+	bp.generateExamples(20);
 
 	//System.out.println("Weights");
 }

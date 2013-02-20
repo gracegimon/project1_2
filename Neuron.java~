@@ -15,7 +15,7 @@ public class Neuron{
 
 		weights = new Vector<Synapsis>();
 		error = 0;
-		weight0 = (Math.random()-0.5)/10;
+		weight0 = Math.random();
 		System.out.println(" Weight0   " +weight0);
 		
 	}

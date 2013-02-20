@@ -26,6 +26,7 @@ class BackPropagationL{
 
 	static double[][] trainData;
 	static double[][] testData;
+	static double[] normMatrix;
 	Vector<Neuron> inputNeurons;
 	Vector<Neuron> hiddenNeurons;
 	Vector<Neuron> hiddenNeurons2;
@@ -43,7 +44,7 @@ class BackPropagationL{
 	int numberOfLayers;
 	double error = 0;
 	double output = 0;
-	int maxIterations = 100;
+	int maxIterations = 2000;
 
 	public BackPropagationL(int numberOfWeights, int numberOfNeurons, int numberOfOutputs, int numberOfExamples, int numberOfLayers){
 		//trainData = new double[numberOfExamples][numberOfWeights];
@@ -103,14 +104,14 @@ private double derivativeActivationFunction(double value )
 
 private double calculateErrorHidden(int layer) 
 { 
-	double error = 0.0;
+	double error2 = 0.0;
 	if (layer == 1) //First hidden layer
 		for (int k = 0; k <outputNeurons .size(); k++)
 		{
 			Neuron n = outputNeurons.get(k);
 			for (int j = 0; j < n.weights.size(); j++)
 			{
-				error += n.weights.get(j).value * n.deltaW;
+				error2 += n.weights.get(j).value * n.deltaW;
 			}	
 		}
 	else{ //Second hidden layer
@@ -119,36 +120,37 @@ private double calculateErrorHidden(int layer)
 			Neuron n = hiddenNeurons2.get(k);
 			for (int j = 0; j < n.weights.size(); j++)
 			{
-				error += n.weights.get(j).value * n.deltaW;
+				error2 += n.weights.get(j).value * n.deltaW;
 			}	
 		}
 	}
-	return error;
+	return error2;
 }
 
 private double Random(){
-	double rand = Math.random() * 2 -1;
+	double rand = (Math.random()-0.5)/10;
 	System.out.println(" Peso, random: "+rand);
 	return rand;
-}
+}  
 
 /** 
 *   @param learningRate : learning rate
+*   @param type : 0 - Training. 1 - Testing
 */
-private void backPropagation(double learningRate)
+private void backPropagation(double learningRate, int type)
 {
 
 		int currentIteration = 0;
 		
 		do
 		{
-			System.out.println("******************************");
-			System.out.println("ITERACION  " + currentIteration);
+		//	System.out.println("******************************");
+		//	System.out.println("ITERACION  " + currentIteration);
 			for (int i = 0; i< trainData.length; i++) //For each example
 			{
 				Neuron n;
 
-				if (i == 0 && currentIteration == 0) //no neuron created
+				if (i == 0 && currentIteration == 0 && type == 0) //no neuron created
 				{
 					//System.out.println("Input Neurons size " +inputNeurons.size() );
 					//Calculate activation function for input
@@ -262,11 +264,11 @@ private void backPropagation(double learningRate)
 					if (currentIteration > 0) 
 					{
 						for (int l = 0; l< outputNeurons.size(); l++)
-                   		{
-                           		 n = outputNeurons.get(l);
-                    	//      System.out.println("Activation F outputNeurons " + n.activationValue);
-            	                n.error = 0;
-                        }
+         		{
+                 		 n = outputNeurons.get(l);
+          	//      System.out.println("Activation F outputNeurons " + n.activationValue);
+  	                n.error = 0;
+             }
 		
 					}
 
@@ -309,6 +311,8 @@ private void backPropagation(double learningRate)
 				}
 				
 				double target = trainData[i][trainData[i].length-1];
+				if (type == 0)
+				{
 				// Calculate Delta i
 				for (int j = 0; j < outputNeurons.size(); j++)
 				{ 
@@ -318,13 +322,16 @@ private void backPropagation(double learningRate)
 
 				//Calculate Delta j
 				if (numberOfLayers == 1){
+
 					for (int j = 0; j< hiddenNeurons.size(); j++)
 					{
 						n = hiddenNeurons.get(j);
 						n.deltaW = n.derivativeValue * calculateErrorHidden(1);
-					}				
+					}		
+		
 				}
-				else{
+				else
+				{
 					// FOR MORE LAYERS ONLY
 					for (int j = 0; j< hiddenNeurons2.size(); j++)
 					{
@@ -344,44 +351,45 @@ private void backPropagation(double learningRate)
 
 
 				// Update weights for Wij
-				for (int j = 0; j< outputNeurons.size(); j++)
-				{
-					n = outputNeurons.get(j);
-					for (int k=0; k<n.weights.size(); k++){
-						Synapsis s = n.weights.get(k);
-						s.value += learningRate * s.parent.activationValue * n.deltaW;
-					}
-				}
-				if (numberOfLayers > 1){
-				
-					for (int j = 0; j< hiddenNeurons2.size(); j++)
+
+					for (int j = 0; j< outputNeurons.size(); j++)
 					{
-						n = hiddenNeurons2.get(j);
+						n = outputNeurons.get(j);
 						for (int k=0; k<n.weights.size(); k++){
 							Synapsis s = n.weights.get(k);
 							s.value += learningRate * s.parent.activationValue * n.deltaW;
 						}
 					}
+					if (numberOfLayers > 1){
+				
+						for (int j = 0; j< hiddenNeurons2.size(); j++)
+						{
+							n = hiddenNeurons2.get(j);
+							for (int k=0; k<n.weights.size(); k++){
+								Synapsis s = n.weights.get(k);
+								s.value += learningRate * s.parent.activationValue * n.deltaW;
+							}
+						}
 
-				}
-				for (int j = 0; j< hiddenNeurons.size(); j++)
-				{
-					n = hiddenNeurons.get(j);
-					for (int k=0; k<n.weights.size(); k++){
-						Synapsis s = n.weights.get(k);
-						s.value += learningRate * s.parent.activationValue * n.deltaW;
 					}
-				}
-
+					for (int j = 0; j< hiddenNeurons.size(); j++)
+					{
+						n = hiddenNeurons.get(j);
+						for (int k=0; k<n.weights.size(); k++){
+							Synapsis s = n.weights.get(k);
+							s.value += learningRate * s.parent.activationValue * n.deltaW;
+						}
+					}
+			 }
 			}
 			Neuron n1;
 			for (int l = 0; l< outputNeurons.size(); l++)
-            {
+      {
                 n1 = outputNeurons.get(l);
-                System.out.println("Error de neurona "+ l + " : "+  n1.error);
 			}
 
 			currentIteration++;
+			
 		}while(currentIteration != maxIterations);
 
 		/* Write results into a file */
@@ -389,7 +397,7 @@ private void backPropagation(double learningRate)
 
 }
 
-public void generateExamples(int numberOfExamples){
+public static void generateExamples(int numberOfExamples){
 
 	HashSet<Sample> insideCircle = new HashSet<Sample>();
 	HashSet<Sample> outsideCircle = new HashSet<Sample>();
@@ -413,6 +421,7 @@ public void generateExamples(int numberOfExamples){
 		}
 	}
 
+/*
 Iterator<Sample> it = insideCircle.iterator();
 	while( it.hasNext()){
 		System.out.println("INSIDE");
@@ -429,92 +438,48 @@ Iterator<Sample> it = insideCircle.iterator();
 			System.out.print(s.x+" "+s.y+"  "+s.target);
 			System.out.println("  Distancia "+Math.sqrt(Math.pow(s.x-10,2)+ Math.pow(s.y-10,2) ) + "  ");
 		}
+*/
 	writeExamples(insideCircle,outsideCircle);
-	
+
 
 }
-
-
-
-
-
-public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
-
-    double prop = gridSize / 5;
-	double radius = (gridSize - (prop*2)) / 2; 
-
-	// We are making values inside the circle area (target == -1)
-	HashSet<Sample> samples = new HashSet<Sample>();
-	while (samples.size() < numberOfExamples/2)
-	{
-		double radioX = Math.random()*radius;
-		double radioY = Math.random()*radius;
-		double alfaX = Math.toRadians(Math.random()*360);
-		double alfaY = Math.toRadians(Math.random()*360);
-		Sample sample = new Sample(radioX +Math.cos(alfaX) + gridSize/2, radioY + Math.cos(alfaY) + gridSize/2, -1);
-		samples.add(sample);
-		System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
-		
-	}
-
-	int dummy = 0;
-	while (samples.size() < numberOfExamples )
-	{
-		//Outside the circle area
-		double x = Math.random()*5;
-		double y = Math.random()*5;
-		double x1 = 16.0 + Math.random()*5;
-		double y1 = 16.0 + Math.random()*5;
-
-		switch (dummy)
-		{
-			case 0:
-				Sample sample = new Sample(x, y, 1);
-				samples.add(sample);
-				System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
-			break;
-			case 1:
-				sample = new Sample(x,y1,1);
-				samples.add(sample);
-				System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
-			break;
-			case 2:
-				sample = new Sample(x1,y,1);
-				samples.add(sample);
-				System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
-			break;
-			case 3:
-				sample = new Sample(x1,y1,1);
-				samples.add(sample);
-				System.out.println(" Sample "+ sample.x + "   "+ sample.y+ "   " +sample.target);
-			break;
-		}
-		dummy = ( dummy == 3 ? 0 : dummy + 1);
-	}	
-	return samples;
-}
-
 
 // READ and WRITE FILES functions
 
-  // Saves training and testing data in global arrays
-	private static void readData(String filename, int type)
+	// Normalize data
+	private static void normalizeData()
 	{
-	    int numberOfData = 0;
-	    int numberOfTestData = 0;
+		double aux;
+		int numberOfAttributes = trainData[0].length;
+		//normMatrix = new double[numberOfAttributes];
 
-      // Experiment 1 files
+		// Calculates the average for each attribute
+		for (int i=0; i < normMatrix.length; i++)
+		{
+				normMatrix[i] = normMatrix[i] / trainData.length;
+		}
 
-      if (filename.equals("datos_r6_n500.txt"))
-	        numberOfData = 500;
-      else if (filename.equals("datos_r6_n1000.txt"))
-	        numberOfData = 1000;
-	    else if (filename.equals("datos_r6_n2000.txt"))
-	        numberOfData = 2000;
+		// Normalize the data 
+			for (int i=0; i < trainData.length; i++) 
+			{
+				for (int j=0; j < numberOfAttributes; j++)
+				{
+					//System.out.println("normMatrix: " + normMatrix[j]);
+					aux = trainData[i][j] / normMatrix[j]; 
+					if (j < numberOfAttributes-1)
+						trainData[i][j] = (double) Math.round(aux);
+				}
+			}
+	}
 
-      // Experiment 2 files
 
-      else if(filename.equals("training3_50.txt"))
+	// Saves training data in a global array
+	private static void readData2(String filename) 
+	{
+			int numberOfData = 0;
+
+			// Experiment 2 files
+      if(filename.equals("training3_50.txt"))
           numberOfData = 170;
       else if(filename.equals("training3_60.txt"))
 	        numberOfData = 204;
@@ -526,15 +491,100 @@ public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
 	       	numberOfData = 306;
 
       else if(filename.equals("test3_50.txt"))
-	       	numberOfTestData = 171;
+	       	numberOfData = 171;
 	    else if(filename.equals("test3_60.txt"))
-	       	numberOfTestData = 137;
+	       	numberOfData = 137;
 	    else if(filename.equals("test3_70.txt"))
-	       	numberOfTestData = 103;
+	       	numberOfData = 103;
 	    else if(filename.equals("test3_80.txt"))
-	       	numberOfTestData = 69;
+	       	numberOfData = 69;
 	    else if(filename.equals("test3_90.txt"))
-	       	numberOfTestData = 35;
+	       	numberOfData = 35;
+
+			try // Reads and saves content
+		{
+			BufferedReader br = new BufferedReader(new FileReader(filename));
+			String str;
+		  int i = 0, numberOfAttributes = 0;
+
+			// Reads first line to know how many attributes are
+			str = br.readLine();
+			String[] strArr = str.split(",");
+			numberOfAttributes = strArr.length;
+
+			trainData = new double[numberOfData][numberOfAttributes];
+			normMatrix = new double[numberOfAttributes];
+			
+	
+
+			outputs = new double[numberOfData];
+			for (int j = 0 ; j < strArr.length; j++)
+			{
+						trainData[i][j] = Double.parseDouble(strArr[j]);
+						if (j < strArr.length-1) // Last value is normalized
+						{
+							normMatrix[j] += Double.parseDouble(strArr[j]);
+						}
+			}
+
+			// Read examples
+			while ( (str = br.readLine()) != null )
+			{
+			    i++;
+			    strArr = str.split(",");
+			    for (int j = 0; j < strArr.length; j++)
+			    {
+				   			trainData[i][j] = Double.parseDouble(strArr[j]);
+
+								if (j < strArr.length-1) // Last value is normalized
+									normMatrix[j] += Double.parseDouble(strArr[j]);
+			    }
+
+			}
+
+  
+      System.out.println("\nData:\n OK"); 
+			br.close();
+
+			// Normalize data
+			normalizeData();
+
+			for(i=0; i < numberOfData; i++)
+			{
+				for (int j=0; j < numberOfAttributes; j++)
+				{
+					System.out.println("Elem " + i + " "+ j+ " "+ trainData[i][j]);
+				}
+			}
+
+			
+
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+  // Saves training and testing data in global arrays
+	private static void readData1(String filename)
+	{
+	    int numberOfData = 0;
+
+      // Experiment 1 files
+      if (filename.equals("datos_r6_n500.txt"))
+	        numberOfData = 500;
+      else if (filename.equals("datos_r6_n1000.txt"))
+	        numberOfData = 1000;
+	    else if (filename.equals("datos_r6_n2000.txt"))
+	        numberOfData = 2000;
+			else if (filename.equals("GeneratedExamples500.txt"))
+					numberOfData = 500;
+			else if (filename.equals("GeneratedExamples1000.txt"))
+					numberOfData = 1000;
+			else if (filename.equals("GeneratedExamples2000.txt"))
+					numberOfData = 2000;
+			else if (filename.equals("GeneratedExamples10000.txt"))
+					numberOfData = 10000;
 
 		try // Reads and saves content
 		{
@@ -547,25 +597,25 @@ public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
 			String[] strArr = str.split(" ");
 			numberOfAttributes = strArr.length;
 
-      if (type == 1) // Training Data
-          trainData = new double[numberOfData][numberOfAttributes];
-      else  // Testing data
-          testData = new double[numberOfData][numberOfAttributes];
+			trainData = new double[numberOfData][numberOfAttributes];
 			
 			outputs = new double[numberOfData];
+
+			for (int j = 0 ; j < strArr.length; j++)
+			{
+						trainData[i][j] = Double.parseDouble(strArr[j]);
+			}
 
 			// Read examples
 			while ( (str = br.readLine()) != null )
 			{
+			    i++;
 			    strArr = str.split(" ");
 			    for (int j = 0; j < strArr.length; j++)
 			    {
-              if (type == 1)
-				          trainData[i][j] = Double.parseDouble(strArr[j]);
-              else
-                  testData[i][j] = Double.parseDouble(strArr[j]);
+				   			trainData[i][j] = Double.parseDouble(strArr[j]);
 			    }
-			    i++;
+
 			}
   
       System.out.println("\nData:\n OK"); 
@@ -577,30 +627,31 @@ public HashSet<Sample> setExamples(int numberOfExamples, int gridSize){
 
 
   // Write the generated examples in a file
-  public void writeExamples(HashSet<Sample> insideCircle, HashSet<Sample> outsideCircle)
+  public static void writeExamples(HashSet<Sample> insideCircle, HashSet<Sample> outsideCircle)
 {
 	  FileWriter file = null;
     PrintWriter pw = null;
     try
     {
-        file = new FileWriter("GeneratedExamples.txt");
+				int numberOfExamples = insideCircle.size() + outsideCircle.size();
+        file = new FileWriter("GeneratedExamples"+numberOfExamples +".txt");
         pw = new PrintWriter(file);
 
         // Write first line
-        pw.println("X Y CLASS");
+        //pw.println("X Y CLASS");
 
         // Write points inside the circle
         Iterator<Sample> it = insideCircle.iterator();
 		    while( it.hasNext()){
 			      Sample s = it.next();
-			      pw.println(s.x+","+s.y+","+s.target);
+			      pw.println(s.x+" "+s.y+" "+s.target);
 		    }
 		
         // Write points outside the circle
 		    it = outsideCircle.iterator();
     		while( it.hasNext()){
 		        Sample s = it.next();
-			      pw.println(s.x+","+s.y+","+s.target);
+			      pw.println(s.x+" "+s.y+" "+s.target);
 		    }
 
 	}catch (Exception e) {
@@ -624,7 +675,7 @@ public void writeData()
     PrintWriter pw = null;
     try
     {
-        file = new FileWriter("resultados.txt");
+        file = new FileWriter("resultados"+(error++ )+".txt");
         pw = new PrintWriter(file);
         pw.println("X Y CLASS");
         int good = 0;
@@ -662,8 +713,9 @@ public void writeData()
 public static void main(String[] args) 
 {
     String trainFile = "", testFile = "";
+		BackPropagationL bp;
 
-    if (args.length < 2)
+    if (args.length < 1)
     {
         System.out.println("\nPor favor indique el experimento y los archivos correspondientes.\n");
         System.exit(-1);
@@ -675,18 +727,54 @@ public static void main(String[] args)
       System.exit(-1);
     }
 
-    trainFile = args[1];
-    readData(trainFile, 1);
+		if (args[0].equals("1")) 
+		{
+				trainFile = args[1];
+    		readData1(testFile);	
 
-    if (args[0] == "2")
+				// Training
+				bp = new BackPropagationL(2, 3, 1,trainData.length,1);
+				bp.backPropagation(0.05,0);
+
+				// Testing
+				generateExamples(10000);
+				readData1("GeneratedExamples10000.txt");
+				bp = new BackPropagationL(2, 3, 1,trainData.length,1);	
+				bp.backPropagation(0.05,1);
+		}
+		else if (args[0].equals("2"))
+		{
+				// Training
+				generateExamples(Integer.parseInt(args[1]));
+				readData1("GeneratedExamples"+ Integer.parseInt(args[1]) +".txt");
+				bp = new BackPropagationL(2, 8, 1,trainData.length,1);
+				bp.backPropagation(0.05,0);
+
+				// Testing
+				generateExamples(10000);
+				readData1("GeneratedExamples10000.txt");
+				//bp = new BackPropagationL(2, 8, 1,trainData.length,1);			
+				bp.backPropagation(0.05,1);
+		}
+    else if (args[0].equals("3"))
     {
+				// Training
+				trainFile = args[1];
+    		readData2(trainFile);
+				bp = new BackPropagationL(2, 3, 1,trainData.length,1);
+				bp.backPropagation(0.05,0);
+
+				// Testing
         testFile = args[2];
-        readData(testFile, 2);
+        readData2(testFile);
+				bp = new BackPropagationL(2, 3, 1,trainData.length,1);
+				bp.backPropagation(0.05,1);
     }
 
-    BackPropagationL bp = new BackPropagationL(2, 4, 1,trainData.length,1);
-    //bp.backPropagation(0.05);
-    bp.generateExamples(20);
+    //BackPropagationL bp = new BackPropagationL(2, 3, 1,trainData.length,1);
+    //bp.backPropagation(0.05,0);
+		//bp.backPropagation(0.05,1);
+    //bp.generateExamples(20);
 }
 
 

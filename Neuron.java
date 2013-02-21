@@ -10,12 +10,16 @@ public class Neuron{
 	public double error; // NUll for hidden and input
 
 
-	public Neuron()
+	public Neuron(boolean ultima)
 	{
 
 		weights = new Vector<Synapsis>();
 		error = 0;
-		weight0 = (Math.random()-0.5)/10;
+		//weight0 = (Math.random()-0.5)/10;
+		if (!ultima)
+			weight0 = ((Math.random()*2) - 1)/4;
+		else
+			weight0 = ((Math.random()*4) - 2)/4;
 		System.out.println(" Weight0   " +weight0);
 		
 	}

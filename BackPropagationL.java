@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.HashSet;
-
+import java.util.Collections;
 
 /*
 	Backpropagation for a neural network
@@ -83,18 +83,15 @@ private double activationFunction(Neuron neuron)
 		{
 			activationValues[l] = weights.get(l).parent.activationValue;
 			weightsValues[l] = weights.get(l).value;
-
 		}
 
 		for (int i = 0; i < activationValues.length; i++)// Sumi Wij * activationValue
 		{ 
 			activation += weightsValues[i] * activationValues[i];
-			
-			
-		}	
+		}
 		activation += neuron.weight0;
 
-	
+		
 	return sigmoidFunc(activation); 
 }
 
@@ -129,8 +126,16 @@ private double calculateErrorHidden(int layer)
 	return error2;
 }
 
-private double Random(){
-	double rand = (Math.random()-0.5)/10;
+private double RandomHidden(){
+	//double rand = (Math.random()-0.5)/10;
+	double rand = ((Math.random()*2) - 1)/4;
+	System.out.println(" Peso, random: "+rand);
+	return rand;
+}
+
+private double RandomOutput(){
+	//double rand = (Math.random()-0.5)/10;
+	double rand = ((Math.random()*4) - 2);
 	System.out.println(" Peso, random: "+rand);
 	return rand;
 }  
@@ -162,7 +167,7 @@ private void backPropagation(double learningRate, int type)
 					//Calculate activation function for input
 					for (int j = 0; j < numberOfInputs; j++)
 					{
-						n = new Neuron();
+						n = new Neuron(false);
 						n.activationValue = trainData[i][j];
 						inputNeurons.add(n);
 						 //Input layer (Xk)
@@ -176,9 +181,9 @@ private void backPropagation(double learningRate, int type)
 						//Calculate activation function for hidden
 						for (int j = 0; j < numberOfNeurons; j++)
 						{
-							n = new Neuron();
+							n = new Neuron(false);
 							for (int k = 0; k < inputNeurons.size(); k++){ // Weights -1, 1
-								n.AddSynapsis(new Synapsis(Random(), inputNeurons.get(k)));
+								n.AddSynapsis(new Synapsis(RandomHidden(), inputNeurons.get(k)));
 							//	System.out.println("Pesos neurona "+ k +" : " + n.weights.get(k).value);
 							}
 
@@ -192,9 +197,9 @@ private void backPropagation(double learningRate, int type)
 
 						for (int j = 0; j < numberOfOutputs; j++)
 						{
-							n = new Neuron();
+							n = new Neuron(true);
 							for (int k = 0; k < hiddenNeurons.size(); k++){
-								n.AddSynapsis(new Synapsis(Random(), hiddenNeurons.get(k)));
+								n.AddSynapsis(new Synapsis(RandomHidden(), hiddenNeurons.get(k)));
 							}
 
 							n.activationValue = activationFunction(n);
@@ -215,9 +220,9 @@ private void backPropagation(double learningRate, int type)
 
 						for (int j = 0; j < neuronsFirstLayer; j++)
 						{
-							n = new Neuron();
+							n = new Neuron(false);
 							for (int k = 0; k < inputNeurons.size(); k++){ // Weights -1, 1
-								n.AddSynapsis(new Synapsis(Random(), inputNeurons.get(k)));
+								n.AddSynapsis(new Synapsis(RandomHidden(), inputNeurons.get(k)));
 								System.out.println("Pesos neurona "+ k +" : " + n.weights.get(k).value);
 							}
 
@@ -233,9 +238,9 @@ private void backPropagation(double learningRate, int type)
 						System.out.println("Number of second layer" + (numberOfNeurons - neuronsFirstLayer));
 						for (int j = 0; j < numberOfNeurons - neuronsFirstLayer; j++)
 						{
-							n = new Neuron();
+							n = new Neuron(false);
 							for (int k = 0; k < hiddenNeurons.size(); k++){ // Weights -1, 1
-								n.AddSynapsis(new Synapsis(Random(), hiddenNeurons.get(k)));
+								n.AddSynapsis(new Synapsis(RandomHidden(), hiddenNeurons.get(k)));
 							//	System.out.println("Pesos neurona "+ k +" : " + n.weights.get(k).value);
 							}
 
@@ -250,9 +255,9 @@ private void backPropagation(double learningRate, int type)
 
 						for (int j = 0; j < numberOfOutputs; j++)
 						{
-							n = new Neuron();
+							n = new Neuron(true);
 							for (int k = 0; k < hiddenNeurons2.size(); k++){
-								n.AddSynapsis(new Synapsis(Random(), hiddenNeurons2.get(k)));
+								n.AddSynapsis(new Synapsis(RandomOutput(), hiddenNeurons2.get(k)));
 							}
 
 							n.activationValue = activationFunction(n);
@@ -358,6 +363,7 @@ private void backPropagation(double learningRate, int type)
 							Synapsis s = n.weights.get(k);
 							s.value += learningRate * s.parent.activationValue * n.deltaW;
 						}
+						n.weight0 += learningRate *n.deltaW;
 					}
 					if (numberOfLayers > 1){
 				
@@ -368,6 +374,7 @@ private void backPropagation(double learningRate, int type)
 								Synapsis s = n.weights.get(k);
 								s.value += learningRate * s.parent.activationValue * n.deltaW;
 							}
+							n.weight0 += learningRate *n.deltaW;
 						}
 
 					}
@@ -378,6 +385,7 @@ private void backPropagation(double learningRate, int type)
 							Synapsis s = n.weights.get(k);
 							s.value += learningRate * s.parent.activationValue * n.deltaW;
 						}
+						n.weight0 += learningRate *n.deltaW;
 					}
 			 	}
 			}
@@ -386,7 +394,7 @@ private void backPropagation(double learningRate, int type)
       		{
                 n1 = outputNeurons.get(l);
                 errors[currentIteration] = n1.error / trainData.length;
-                System.out.println("error "+ n1.error  / trainData.length);
+            //    System.out.println("error "+ n1.error  / trainData.length);
 			}
 
 			currentIteration++;
@@ -404,25 +412,58 @@ public static void generateExamples(int numberOfExamples){
 
 	HashSet<Sample> insideCircle = new HashSet<Sample>();
 	HashSet<Sample> outsideCircle = new HashSet<Sample>();
+	double factor = 10000000000d;
+	//d = Math.round(d*factor) / factor;
+
+	while (insideCircle.size() < numberOfExamples/2)
+	{
+		double angle = Math.random()*360;
+		double angleR = Math.toRadians(angle);
+		double radius = Math.random()*6;
+
+		double x = 10 + Math.cos(angleR)*radius;
+		double y = 10 + Math.sin(angleR)*radius;
+
+		insideCircle.add(new Sample(x,y,0));
+	}
+
+	while (outsideCircle.size() < numberOfExamples/2)
+	{
+		double x = Math.round(Math.random()*20*factor)/factor;
+		double y = Math.round(Math.random()*20*factor)/factor;
+		Sample s;
+
+		if ( Math.sqrt( Math.pow((x-10), 2) + Math.pow((y-10), 2)) > 6 )
+		{
+			s = new Sample(x,y,1);
+			outsideCircle.add(s);
+		}
+	}
+
+	/*
 	while (insideCircle.size() < numberOfExamples/2 || outsideCircle.size() < numberOfExamples/2 ){
-		float x = (float)Math.random()*20;
-		float y = (float)Math.random()*20;
+		double x = Math.round(Math.random()*20*factor)/factor;
+		double y = Math.round(Math.random()*20*factor)/factor;
 		Sample s;
 		
-		if ( Math.pow((x - 10),2) + Math.pow((y-10),2) < 36){
-			if(insideCircle.size() < numberOfExamples/2){
-			s = new Sample(x,y,0);
-			insideCircle.add(s);
+		if ( Math.pow((x - 10),2) + Math.pow((y-10),2) <= 36)
+		{
+			if(insideCircle.size() < numberOfExamples/2)
+			{
+				s = new Sample(x,y,0);
+				insideCircle.add(s);
 			}
 		}
-		else{
-			if ( outsideCircle.size() < numberOfExamples/2){
-							s = new Sample(x,y,1);
-							outsideCircle.add(s);
+		else
+		{
+			if ( outsideCircle.size() < numberOfExamples/2)
+			{
+				s = new Sample(x,y,1);
+				outsideCircle.add(s);
 			}
 			
 		}
-	}
+	}*/
 
 /*
 Iterator<Sample> it = insideCircle.iterator();
@@ -643,6 +684,8 @@ Iterator<Sample> it = insideCircle.iterator();
         file = new FileWriter("GeneratedExamples"+numberOfExamples +".txt");
         pw = new PrintWriter(file);
 
+        Vector<Sample> scrambled = new Vector<Sample>();
+
         // Write first line
         //pw.println("X Y CLASS");
 
@@ -650,13 +693,20 @@ Iterator<Sample> it = insideCircle.iterator();
         Iterator<Sample> it = insideCircle.iterator();
 		    while( it.hasNext()){
 			      Sample s = it.next();
-			      pw.println(s.x+" "+s.y+" "+s.target);
+			      scrambled.add(s); //pw.println(s.x+" "+s.y+" "+s.target);
 		    }
 		
         // Write points outside the circle
 		    it = outsideCircle.iterator();
     		while( it.hasNext()){
 		        Sample s = it.next();
+			      scrambled.add(s); // pw.println(s.x+" "+s.y+" "+s.target);
+		    }
+
+		Collections.shuffle(scrambled);
+		it = scrambled.iterator();
+		    while( it.hasNext()){
+			      Sample s = it.next();
 			      pw.println(s.x+" "+s.y+" "+s.target);
 		    }
 
@@ -687,6 +737,7 @@ public void writeData(int numberOfAttributes)
         int good = 0;
         for (int i = 0; i < trainData.length; i++)
         {
+        	//System.out.println("Output: " + outputs[i]);
         		if (outputs[i] >= 0.5)
 					outputs[i] = 1;
 				else
@@ -696,10 +747,10 @@ public void writeData(int numberOfAttributes)
 
 				}
 				pw.println(outputs[i]);
-				if (outputs[i] ==trainData[i][trainData[i].length-1] )
+				if (outputs[i] == trainData[i][trainData[i].length-1] )
 					good++;
 
-          
+				System.out.println("trainData: " + trainData[i][trainData[i].length-1]);  
         }
         pw.println(good);
 
@@ -731,6 +782,12 @@ public void writeData(int numberOfAttributes)
 
 public static void main(String[] args) 
 {
+	/*double d = 18.037189483642578;
+	double factor = 10000000000d;
+	d = Math.round(d*factor) / factor;
+	System.out.println("d = " + d);
+    System.exit(0);*/
+
     String trainFile = "", testFile = "";
 		BackPropagationL bp;
 
@@ -775,8 +832,8 @@ public static void main(String[] args)
 				bp.backPropagation(0.05,0);
 
 				// Testing
-				generateExamples(1000);
-				readData1("GeneratedExamples1000.txt");	
+				//generateExamples(10000);
+				readData1("GeneratedExamples10000.txt");	
 				bp.maxIterations = 1;	
 				bp.backPropagation(0.05,1);
 		}
